@@ -258,12 +258,10 @@ class Tetris(QMainWindow):
                     self.game.place_current_shape()
 
             elif key == Qt.Key_Down:
-                for i in range(len(self.game.fild) - 1, self.game.temp_y, -1):
-                    if self.game.can_move(self.game.temp_x, i):
-                        self.game.clear_current_shape()
-                        self.game.temp_y = i
-                        self.game.place_current_shape()
-                        break
+                while self.game.can_move(self.game.temp_x, self.game.temp_y + 1):
+                    self.game.clear_current_shape()
+                    self.game.temp_y += 1
+                    self.game.place_current_shape()
 
             self.repaint()
 
