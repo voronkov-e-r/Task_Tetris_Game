@@ -1,6 +1,7 @@
 import sys
 import random
-from PyQt5.QtWidgets import QMainWindow, QFrame, QDesktopWidget, QApplication, QLabel
+from PyQt5.QtWidgets import QMainWindow, QFrame, QDesktopWidget, QApplication, QLabel, QPushButton, QSpinBox, \
+    QHBoxLayout, QVBoxLayout, QWidget, QTextEdit, QGroupBox
 from PyQt5.QtCore import Qt, QBasicTimer, pyqtSignal, QTimer
 from PyQt5.QtGui import QPainter, QColor, QPen, QBrush
 
@@ -45,17 +46,18 @@ class Shape(object):
 
 
 class Game:
-    def __init__(self, width=9, height=15):
+    def __init__(self, width, height, level, start_speed):
         self.width = width
         self.height = height
         self.fild = [[0 for _ in range(width)] for _ in range(height)]
         self.temp_shape = None
-        self.temp_x = 4
+        self.temp_x = (self.width - 1) // 2
         self.temp_y = 1
         self.score = 0
+        self.start_speed = start_speed
         self.speed = 800
         self.drought = 0
-        self.level = 1
+        self.level = level
         self.final_flag = False
 
     def create_new_shape(self):
@@ -70,7 +72,7 @@ class Game:
             self.drought += 1
 
         self.temp_shape.reset_rotation()
-        self.temp_x = 4
+        self.temp_x = (self.width - 1) // 2
         self.temp_y = 1
 
         if not self.can_place_new_shape():
@@ -158,21 +160,118 @@ class Game:
         self.set_difficulty()
 
     def set_difficulty(self):
-        change = ((self.score // 5000) + 1) * 100
-        self.speed = 1000 - change
-        self.level = change // 100
+        change = (self.score // 5000) * 100
+        self.speed = self.start_speed - change
+        self.level = (1000 - self.start_speed + change) // 100
 
     def game_over(self):
         self.final_flag = True
 
 
-
-
-class Tetris(QMainWindow):
+class StartScreen(QWidget):
     def __init__(self):
         super().__init__()
+        self.initUI()
 
-        self.game = Game()
+    def initUI(self):
+        self.setWindowTitle('Tetris - Настройки')
+        self.setFixedSize(400, 400)
+
+        main_layout = QVBoxLayout()
+
+        desc_group = QGroupBox("О игре Tetris")
+        desc_layout = QVBoxLayout()
+
+        description = QTextEdit()
+        description.setReadOnly(True)
+        description.setText("""
+                Классическая игра Тетрис:
+
+                Цель: Располагать падающие фигуры так, 
+                чтобы они заполняли горизонтальные линии.
+
+                Управление:
+                ← → - двигать фигуру влево/вправо
+                ↑ - повернуть фигуру
+                ↓ - ускорить падение
+
+                Чем больше линий удаляется за раз, 
+                тем больше очков вы получаете!
+                """)
+        description.setMaximumHeight(150)
+
+        desc_layout.addWidget(description)
+        desc_group.setLayout(desc_layout)
+
+        settings_group = QGroupBox("Настройки игры")
+        settings_layout = QVBoxLayout()
+
+        width_layout = QHBoxLayout()
+        width_label = QLabel("Ширина поля (9-15):")
+        self.width_spin = QSpinBox()
+        self.width_spin.setRange(9, 15)
+        self.width_spin.setValue(9)
+        width_layout.addWidget(width_label)
+        width_layout.addWidget(self.width_spin)
+
+        height_layout = QHBoxLayout()
+        height_label = QLabel("Высота поля (15-25):")
+        self.height_spin = QSpinBox()
+        self.height_spin.setRange(15, 25)
+        self.height_spin.setValue(15)
+        height_layout.addWidget(height_label)
+        height_layout.addWidget(self.height_spin)
+
+        level_layout = QHBoxLayout()
+        level_label = QLabel("Начальный уровень (1-10):")
+        self.level_spin = QSpinBox()
+        self.level_spin.setRange(1, 10)
+        self.level_spin.setValue(1)
+        level_layout.addWidget(level_label)
+        level_layout.addWidget(self.level_spin)
+
+        settings_layout.addLayout(width_layout)
+        settings_layout.addLayout(height_layout)
+        settings_layout.addLayout(level_layout)
+        settings_group.setLayout(settings_layout)
+
+        start_button = QPushButton("Начать игру")
+        start_button.setStyleSheet("""
+                    QPushButton {
+                        font-size: 16px;
+                        font-weight: bold;
+                        padding: 10px;
+                        background-color: #4CAF50;
+                        color: white;
+                        border-radius: 5px;
+                    }
+                    QPushButton:hover {
+                        background-color: #45a049;
+                    }
+                """)
+        start_button.clicked.connect(self.start_game)
+
+        main_layout.addWidget(desc_group)
+        main_layout.addWidget(settings_group)
+        main_layout.addWidget(start_button)
+
+        self.setLayout(main_layout)
+
+    def start_game(self):
+        width = self.width_spin.value()
+        height = self.height_spin.value()
+        level = self.level_spin.value()
+
+        self.game_window = Tetris(width, height, level)
+        self.game_window.show()
+        self.close()
+
+class Tetris(QMainWindow):
+    def __init__(self, width, height, level):
+        super().__init__()
+
+        start_speed = 1000 - level * 100
+        self.game = Game(width, height, level, start_speed)
 
         self.label = QLabel("Score:\n0", self)
         self.label.setGeometry(50 * self.game.width, 50 * self.game.height - 70, 100, 50)
@@ -187,7 +286,7 @@ class Tetris(QMainWindow):
             }
         """)
 
-        self.level_label = QLabel("Level: \n1", self)
+        self.level_label = QLabel(f"Level: \n{self.game.level}", self)
         self.level_label.setGeometry(50 * self.game.width, 50 * self.game.height - 120, 100, 50)
         self.level_label.setAlignment(Qt.AlignCenter)
         self.level_label.setStyleSheet("""
@@ -221,7 +320,7 @@ class Tetris(QMainWindow):
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.tick)
-        self.timer.start(self.game.speed)
+        self.timer.start(self.game.start_speed)
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -293,6 +392,7 @@ class Tetris(QMainWindow):
         self.label.setVisible(False)
 
     def set_ticks(self):
+        self.game.set_difficulty()
         ticks = self.game.speed
         self.timer.stop()
         self.timer.start(ticks)
@@ -300,5 +400,6 @@ class Tetris(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    game = Tetris()
+    game = StartScreen()
+    game.show()
     sys.exit(app.exec_())
