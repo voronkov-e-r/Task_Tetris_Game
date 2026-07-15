@@ -1,0 +1,5 @@
+6000 {'lines_cleared': 2028, 'hole_creation': -221, 'existing_holes': -239, 'height_penalty': -811, 'bumpiness': -135, 'block_support': 799, 'flat_platforms': 967, 'column_transitions': -951, 'well_formation': -29, 'center_weight': 104}
+
+6000 {'lines_cleared': 1506, 'hole_creation': -630, 'existing_holes': -184, 'height_penalty': -769, 'bumpiness': -763, 'block_support': 697, 'flat_platforms': 735, 'column_transitions': -529, 'well_formation': -960, 'center_weight': 517}
+
+4000 {'lines_cleared': 2119, 'hole_creation': -143, 'existing_holes': -760, 'height_penalty': -273, 'bumpiness': -725, 'block_support': 105, 'flat_platforms': 486, 'column_transitions': -376, 'well_formation': -305, 'center_weight': 135}

@@ -1,9 +1,9 @@
 import sys
 import random
-from PyQt5.QtWidgets import QMainWindow, QFrame, QDesktopWidget, QApplication, QLabel, QPushButton, QSpinBox, \
+from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QPushButton, QSpinBox, \
     QHBoxLayout, QVBoxLayout, QWidget, QTextEdit, QGroupBox
-from PyQt5.QtCore import Qt, QBasicTimer, pyqtSignal, QTimer
-from PyQt5.QtGui import QPainter, QColor, QPen, QBrush
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QPainter, QPen, QBrush
 
 
 class Shape(object):
